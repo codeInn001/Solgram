@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Link } from 'react-router-dom';
-import { uploadToIPFS,uploadMetadataToIPFS } from "../utils/upload"; 
+import { uploadToIPFS, uploadMetadataToIPFS } from "../utils/upload";
 
 // console.log(createMetaplexCollection)
 import { Metaplex, keypairIdentity, walletAdapterIdentity } from '@metaplex-foundation/js';
@@ -11,7 +11,8 @@ import { irysUploader } from "@metaplex-foundation/umi-uploader-irys";
 import { createProgrammableNft, mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { SystemProgram, Transaction } from '@solana/web3.js';
-import { getDatabase, ref, onValue,set } from "firebase/database";
+import { getDatabase, ref, onValue, set } from "firebase/database";
+import { database } from '../utils/firebaseConfig';
 import 'firebase/database'
 import { initializeApp } from "firebase/app";
 // import { walletAdapterIdentity } from "@metaplex-foundation/js";
@@ -34,65 +35,66 @@ const umi = createUmi('https://api.devnet.solana.com')
       address: "https://devnet.irys.xyz",
     })
   );
-  
+
 
 function CreatePost() {
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
-    const [file, setFile] = useState(null);
-    const { publicKey, sendTransaction, wallet, connected,connection  } = useWallet();
-    
-  console.log(connected)   
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [file, setFile] = useState(null);
+  const { publicKey, sendTransaction, wallet, connected, connection } = useWallet();
 
-    // const handleImageUpload = (e) => {
-    //     setImage(e.target.files[0]);
-    // };
+  console.log(connected)
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     alert('Upload Successful!');
+  // const handleImageUpload = (e) => {
+  //     setImage(e.target.files[0]);
+  // };
 
-     // };
-    
-     
+  // const handleSubmit = (e) => {
+  //     e.preventDefault();
+  //     alert('Upload Successful!');
 
-    const createNFT = async (description, file, price, e) => {
-      e.preventDefault()
-        
-      try{
-        console.log('uploading')
-        // Step 1: Upload image to IPFS
+  // };
+
+
+
+  const createNFT = async (description, file, price, e) => {
+    e.preventDefault()
+
+    try {
+      console.log('uploading')
+      // Step 1: Upload image to IPFS
       const imageUrl = await uploadToIPFS(file);
       if (!imageUrl) return;
-    
+
       // Step 2: Generate and upload metadata to IPFS
-      const metadataUrl = await uploadMetadataToIPFS(description,imageUrl, price);
+      const metadataUrl = await uploadMetadataToIPFS(description, imageUrl, price);
       console.log(metadataUrl)
       if (!metadataUrl) return;
 
-      
 
-    // const signature = await sendTransaction(nft, connection, { minContextSlot });
 
-    // await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });/
-    // await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
+      // const signature = await sendTransaction(nft, connection, { minContextSlot });
 
-    const nodeRpc = 'https://api.devnet.solana.com'
-  const SolanaConnection = new Connection(nodeRpc)
-  // const METAPLEX = Metaplex.make(SolanaConnection).use(keypairIdentity(wallet.adapter)) 
-  const METAPLEX = Metaplex.make(SolanaConnection).use(walletAdapterIdentity(wallet.adapter));
-    
+      // await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });/
+      // await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
+
+      const nodeRpc = 'https://api.devnet.solana.com'
+      const SolanaConnection = new Connection(nodeRpc)
+      // const METAPLEX = Metaplex.make(SolanaConnection).use(keypairIdentity(wallet.adapter)) 
+      const METAPLEX = Metaplex.make(SolanaConnection).use(walletAdapterIdentity(wallet.adapter));
+
       // Step 3: Create NFT on Solana blockchain
       const { nft: collectionNft } = await METAPLEX.nfts().create({
         uri: metadataUrl,
-        signer:wallet,
+        signer: wallet,
         name: 'my nft',
         sellerFeeBasisPoints: 500, // 5% 
         isCollection: true,
       },
-      { commitment: "finalized" }
-    );
+        { commitment: "finalized" }
+      );
       console.log(`Minted NFT: https://explorer.solana.com/address/${collectionNft.address}?cluster=devnet`);
+      console.log(collectionNft.publicKey)
 
       // const signature = await sendTransaction(nft, connection);
 
@@ -101,42 +103,42 @@ function CreatePost() {
 
       // const wallet = useWallet()
 
-      
-        const updatedUser = {
-          metadataURL: metadataUrl,
-          file: file,
-          address: publicKey.toBase58(),
-          mintAddress: collectionNft.address,
-          price: price,
-          mint: 0,
-        };
-        // const dbRef = ref(database, 'users');
-        // const newDataRef = push(dbRef)
-    
-        // set(newDataRef, updatedUser)
-          // dbRef.set(updatedUser).catch(alert);
-    
-          const db = getDatabase();
-      set(ref(db, '/' ), 
-      updatedUser);
-    
+
+      const updatedUser = {
+        metadataURL: metadataUrl,
+        file: imageUrl,
+        address: publicKey.toBase58(),
+        mintAddress: collectionNft.address,
+        price: price,
+        mint: 0,
+      };
+      // const dbRef = ref(database, 'users');
+      // const newDataRef = push(dbRef)
+
+      // set(newDataRef, updatedUser)
+      // dbRef.set(updatedUser).catch(alert);
+
+      const db = getDatabase();
+      set(ref(db, `/${new Date().getTime().toString()}`),
+        updatedUser);
+
       console.log(db);
-      
-      
-    
-      
-} catch(error) {
-        console.log(error)
-      } 
-      
-    };
-    
 
 
-    return (
-        <div className="relative flex size-full min-h-screen flex-col bg-[#121a21] dark group/design-root overflow-x-hidden" style={{ fontFamily: `"Spline Sans", "Noto Sans", sans-serif` }}>
-            <div className="layout-container flex h-full grow flex-col">
-            <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#253646] px-10 py-3">
+
+
+    } catch (error) {
+      console.log(error)
+    }
+
+  };
+
+
+
+  return (
+    <div className="relative flex size-full min-h-screen flex-col bg-[#121a21] dark group/design-root overflow-x-hidden" style={{ fontFamily: `"Spline Sans", "Noto Sans", sans-serif` }}>
+      <div className="layout-container flex h-full grow flex-col">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#253646] px-10 py-3">
           <div className="flex items-center gap-4 text-white">
             <div className="size-4">
               <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -154,10 +156,10 @@ function CreatePost() {
             </div>
             <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
             <WalletModalProvider>
-                    <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />
-                    {/* <WalletDisconnectButton /> */}
-                    { /* Your app's components go here, nested within the context providers. */ }
-                </WalletModalProvider>
+              <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />
+              {/* <WalletDisconnectButton /> */}
+              { /* Your app's components go here, nested within the context providers. */}
+            </WalletModalProvider>
           </div>
           <div className="flex flex-1 justify-end gap-8">
             <label className="flex flex-col min-w-40 !h-10 max-w-64">
@@ -177,7 +179,7 @@ function CreatePost() {
                 <input
                   placeholder="Search"
                   className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-                  
+
                 />
               </div>
             </label>
@@ -230,77 +232,77 @@ function CreatePost() {
                 className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 bg-[#253646] text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5"
               >
                 <Link to='/createPost'>
-                <div className="text-white" data-icon="Plus" data-size="20px" data-weight="regular">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
-                    <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
-                  </svg>
-                </div>
+                  <div className="text-white" data-icon="Plus" data-size="20px" data-weight="regular">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+                      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
+                    </svg>
+                  </div>
                 </Link>
-                
+
               </button>
             </div>
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-              style={{backgroundImage: `url("https://cdn.usegalileo.ai/stability/3bd954c6-d79a-44a0-ba64-6810e780de17.png")`}}
+              style={{ backgroundImage: `url("https://cdn.usegalileo.ai/stability/3bd954c6-d79a-44a0-ba64-6810e780de17.png")` }}
             ></div>
           </div>
         </header>
 
-                <div className="mx-auto my-auto rounded-lg max-w-lg w-full p-6">
-                    <h2 className="text-2xl font-semibold mb-4 text-[#94adc7]">Upload Post</h2>
-                    <form >
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-[#94adc7] mb-1">Description</label>
-                            <textarea
-                                className="form-input p-3 flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4  border-l-0 pl-2 text-base font-normal leading-normal"
-                                placeholder="Write something..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                required
-                            ></textarea>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-[#94adc7] mb-1">Price (Sol)</label>
-                            <input
-                                type="number"
-                                className="form-input flex p-3  w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4  border-l-0 pl-2 text-base font-normal leading-normal"
-                                placeholder="Enter price"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-[#94adc7] mb-1">Image</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4 p-3 pl-2 text-base font-normal leading-normal"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                required
-                            />
-                        </div>
-
-                        <button
-                            
-                            className="w-full bg-[#053649] from-blue-500 to-teal-400 text-[#94adc7] py-3 rounded-lg font-semibold text-lg hover:from-teal-400 hover:to-blue-500 transition-all"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              createNFT(description,file,price, e)
-                            }}
-                        >
-                            Upload
-                        </button>
-                    </form>
-
-                    
-                    
-                </div>
+        <div className="mx-auto my-auto rounded-lg max-w-lg w-full p-6">
+          <h2 className="text-2xl font-semibold mb-4 text-[#94adc7]">Upload Post</h2>
+          <form >
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#94adc7] mb-1">Description</label>
+              <textarea
+                className="form-input p-3 flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4  border-l-0 pl-2 text-base font-normal leading-normal"
+                placeholder="Write something..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              ></textarea>
             </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#94adc7] mb-1">Price (Sol)</label>
+              <input
+                type="number"
+                className="form-input flex p-3  w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4  border-l-0 pl-2 text-base font-normal leading-normal"
+                placeholder="Enter price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#94adc7] mb-1">Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#253646] focus:border-none h-full placeholder:text-[#94adc7] px-4 p-3 pl-2 text-base font-normal leading-normal"
+                onChange={(e) => setFile(e.target.files[0])}
+                required
+              />
+            </div>
+
+            <button
+
+              className="w-full bg-[#053649] from-blue-500 to-teal-400 text-[#94adc7] py-3 rounded-lg font-semibold text-lg hover:from-teal-400 hover:to-blue-500 transition-all"
+              onClick={(e) => {
+                e.preventDefault()
+                createNFT(description, file, price, e)
+              }}
+            >
+              Upload
+            </button>
+          </form>
+
+
+
         </div>
-    )
+      </div>
+    </div>
+  )
 }
 
 export default CreatePost;
