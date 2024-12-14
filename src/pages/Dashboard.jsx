@@ -89,7 +89,7 @@ function Dashboard() {
                                 ></path>
                             </svg>
                         </div>
-                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
+                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Solgram</h2>
 
                         <WalletModalProvider>
                             <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />

@@ -25,7 +25,7 @@ function Header() {
                 </defs>
               </svg>
             </div>
-            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
+            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Solgram</h2>
           </div>
           
 

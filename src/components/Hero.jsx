@@ -7,6 +7,7 @@ import {
 } from '@solana/wallet-adapter-react-ui';
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useEffect } from "react";
+import { ToastContainer, toast } from 'react-toastify';
 
 // require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -19,7 +20,7 @@ function Hero() {
   
     if(connected) {
       return <Navigate to="/feeds" />
-    }
+    } else {toast("Connect Pantom Wallet!");}
   
 
     return (
@@ -31,11 +32,11 @@ function Hero() {
             <div className="@[480px]:p-4">
               <div
                 className="flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 @[480px]:rounded-xl items-start justify-end px-4 pb-10 @[480px]:px-10"
-                style={{backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/stability/475a058b-c9fc-461f-9d6f-bdc2d60e9d5b.png")`}}
+                style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://images.pexels.com/photos/7676485/pexels-photo-7676485.jpeg?cs=srgb&dl=pexels-ivan-samkov-7676485.jpg&fm=jpg&_gl=1*1axb29m*_ga*NDE5MTk2MDY3LjE3MzQxNDY2NDM.*_ga_8JE65Q40S6*MTczNDE0NjY0Mi4xLjEuMTczNDE0Njc0MS4wLjAuMA..")`}}
               >
                 <div className="flex flex-col gap-2 text-left">
                   <h1
-                    className="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]"
+                    className="text-white text-5xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]"
                   >
                     Create, share, and monetize your content
                   </h1>
@@ -60,7 +61,7 @@ function Hero() {
             <div className="w-full gap-1 overflow-hidden bg-[#121a21] @[480px]:gap-2 aspect-[3/2] rounded-xl flex">
               <div
                 className="w-full bg-center bg-no-repeat bg-cover aspect-auto rounded-none flex-1"
-                style={{backgroundImage: `url("https://cdn.usegalileo.ai/stability/9932d8e2-1bc6-42b9-8292-ad6db873a9b4.png")`}}
+                style={{ backgroundImage: `url("https://images.pexels.com/photos/8368351/pexels-photo-8368351.jpeg?cs=srgb&dl=pexels-ron-lach-8368351.jpg&fm=jpg&_gl=1*15blchh*_ga*NDE5MTk2MDY3LjE3MzQxNDY2NDM.*_ga_8JE65Q40S6*MTczNDE0NjY0Mi4xLjEuMTczNDE0NjY2OS4wLjAuMA..")`}}
               ></div>
             </div>
           </div>
@@ -133,6 +134,7 @@ function Hero() {
             </div>
           </div>
         </div>
+        <ToastContainer />
       </div>
     
 

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { uploadToIPFS, uploadMetadataToIPFS } from "../utils/upload";
 import { Link } from "react-router-dom";
 
@@ -63,6 +64,8 @@ function CreatePost() {
     e.preventDefault()
 
     try {
+      const notify = (note) => toast(note);
+      notify('Creating Post');
       console.log('uploading')
       // Step 1: Upload image to IPFS
       const imageUrl = await uploadToIPFS(file);
@@ -127,10 +130,11 @@ function CreatePost() {
 
       console.log(db);
 
-
+      notify("Done Creating Post!");
 
 
     } catch (error) {
+      notify('connect your wallet')
       console.log(error)
     }
 
@@ -158,7 +162,7 @@ function CreatePost() {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
+            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Solgram</h2>
             </Link>
             <WalletModalProvider>
               <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-2 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />
@@ -318,6 +322,7 @@ function CreatePost() {
 
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

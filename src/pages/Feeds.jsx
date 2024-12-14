@@ -14,6 +14,8 @@ import { push, getDatabase, ref, set, onValue } from 'firebase/database'; // Imp
 import { database } from '../utils/firebaseConfig'; // Import your database instance
 import { useState, useEffect } from 'react'; // Import your database instance
 import Footer from '../components/Footer';
+import { ToastContainer, toast } from 'react-toastify';
+
 
 
 
@@ -43,6 +45,7 @@ async function mintNft(index) {
     const METAPLEX = Metaplex.make(SolanaConnection).use(walletAdapterIdentity(wallet.adapter));
 
     console.log('mintin', entries)
+    toast("Creating Collection");
     console.log(entries[index].mintAddress)
 
   //   const mintNftFromCreator = await METAPLEX.nfts().create({
@@ -76,6 +79,8 @@ async function mintNft(index) {
   } catch(error) {
     console.log(error)
   }
+
+  toast("Done Creating collection!");
   
   
 
@@ -105,7 +110,7 @@ async function mintNft(index) {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
+            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Solgram</h2>
             
             <WalletModalProvider>
               <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />
@@ -295,7 +300,7 @@ async function mintNft(index) {
 
 
         <Footer />
-
+        <ToastContainer />
 
       </div>
     </div>
