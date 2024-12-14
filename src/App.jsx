@@ -5,6 +5,7 @@ import './App.css'
 import LandingPage from './pages/LandingPage'
 import Feeds from './pages/Feeds' 
 import CreatePost from './pages/CreatePost'
+import Dashboard from './pages/Dashboard'
 import {
   Route,
   Routes
@@ -69,6 +70,7 @@ function App() {
             
             <Route path="feeds" element={<Feeds />} />
             <Route path="createPost" element={<CreatePost />} />
+            <Route path="dashboard" element={<Dashboard />} />
           </Routes>  
         </WalletProvider>
       </ConnectionProvider>

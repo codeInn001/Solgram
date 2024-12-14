@@ -1,8 +1,14 @@
+
 import {
   WalletModalProvider,
   WalletDisconnectButton,
   WalletMultiButton
 } from '@solana/wallet-adapter-react-ui';
+import { Metaplex, keypairIdentity, walletAdapterIdentity } from '@metaplex-foundation/js';
+import { createProgrammableNft, mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
+import { Connection, clusterApiUrl, Keypair } from '@solana/web3.js';
+import { mintV1, TokenStandard } from '@metaplex-foundation/mpl-token-metadata'
+import { useWallet } from "@solana/wallet-adapter-react";
 import { Link } from 'react-router-dom';
 import { push, getDatabase, ref, set, onValue } from 'firebase/database'; // Import your database instance
 import { database } from '../utils/firebaseConfig'; // Import your database instance
@@ -13,6 +19,8 @@ import Footer from '../components/Footer';
 
 function Feeds() {
   const [entries, setEntries] = useState([]);
+
+  const { publicKey, sendTransaction, wallet, connected, connection } = useWallet();
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -27,7 +35,52 @@ function Feeds() {
     });
   }, []); // Empty array means this runs only once, like componentDidMount
 
+async function mintNft(index) {
 
+  try {
+    const nodeRpc = 'https://api.devnet.solana.com'
+    const SolanaConnection = new Connection(nodeRpc)
+    const METAPLEX = Metaplex.make(SolanaConnection).use(walletAdapterIdentity(wallet.adapter));
+
+    console.log('mintin', entries)
+    console.log(entries[index].mintAddress)
+
+  //   const mintNftFromCreator = await METAPLEX.nfts().create({
+  //     uri: entries[index].metadataURL,
+  //     name: entries[index].name,
+  //     collection: entries[index].mintAddress, // Link to parent collection
+  //     collectionAuthority: entries[index].address,   // Authority that can verify the collection
+  //   },
+  //     { commitment: "finalized" }
+  //   );
+  //   console.log(`Minted NFT: https://explorer.solana.com/address/${mintNftFromCreator.address}?cluster=devnet`);
+  //   console.log(mintNftFromCreator.address.toString())
+
+  // } catch(error) {
+  //   console.log(error)
+  // }
+
+    const mintNftFromCreator = await METAPLEX.nfts().create({
+      uri: entries[index].metadataURL,
+      mint: entries[index].mintAddress,
+      name: entries[index].name,
+      authority: entries[index].address,
+      amount: 1,
+      // updateAuthority: entries[index].mintAddress,
+      // tokenStandard: TokenStandard.NonFungible,
+    },
+      { commitment: "finalized" }
+    );
+    console.log(`Minted NFT: https://explorer.solana.com/address/${mintNftFromCreator.tokenAddress.toBase58()}?cluster=devnet`);
+    console.log(mintNftFromCreator.nft.address)
+  } catch(error) {
+    console.log(error)
+  }
+  
+  
+
+
+}
 
   return (
 
@@ -37,6 +90,7 @@ function Feeds() {
       <div className="layout-container flex h-full grow flex-col">
         <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#253646] px-10 py-3">
           <div className="flex items-center gap-4 text-white">
+          
             <div className="size-4">
               <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -52,6 +106,7 @@ function Feeds() {
               </svg>
             </div>
             <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blockgram</h2>
+            
             <WalletModalProvider>
               <WalletMultiButton className="flex  max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#378fe6] text-white text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em]" />
               {/* <WalletDisconnectButton /> */}
@@ -138,10 +193,12 @@ function Feeds() {
 
               </button>
             </div>
+            <Link to='/dashboard'>
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
               style={{ backgroundImage: `url("https://cdn.usegalileo.ai/stability/3bd954c6-d79a-44a0-ba64-6810e780de17.png")` }}
             ></div>
+            </Link>
           </div>
         </header>
 
@@ -188,14 +245,15 @@ function Feeds() {
             </div>
             <div className="flex flex-wrap gap-4 px-4 py-2 py-2 justify-between">
               <div className="flex items-center justify-center gap-2 px-3 py-2">
-                <div className="text-[#94adc7]" data-icon="Heart" data-size="24px" data-weight="regular">
+                <div onClick={()=> mintNft(index)} className="text-[#94adc7]" data-icon="Heart" data-size="24px" data-weight="regular">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
                     <path
                       d="M178,32c-20.65,0-38.73,8.88-50,23.89C116.73,40.88,98.65,32,78,32A62.07,62.07,0,0,0,16,94c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,220.66,240,164,240,94A62.07,62.07,0,0,0,178,32ZM128,206.8C109.74,196.16,32,147.69,32,94A46.06,46.06,0,0,1,78,48c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,147.61,146.24,196.15,128,206.8Z"
                     ></path>
                   </svg>
+                      
                 </div>
-                <p className="text-[#94adc7] text-[13px] font-bold leading-normal tracking-[0.015em]">7904</p>
+                <p className="text-[#94adc7] text-[13px] font-bold leading-normal tracking-[0.015em]">{entry.mint}</p>
               </div>
               <div className="flex items-center justify-center gap-2 px-3 py-2">
                 <div className="text-[#94adc7]" data-icon="ChatCircle" data-size="24px" data-weight="regular">
